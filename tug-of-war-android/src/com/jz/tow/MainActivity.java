@@ -1,9 +1,10 @@
 package com.jz.tow;
 
 import android.app.Activity;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Window;
+import android.view.WindowManager;
 
 import com.koushikdutta.async.ByteBufferList;
 import com.koushikdutta.async.DataEmitter;
@@ -18,14 +19,20 @@ public class MainActivity extends Activity {
 	private static final String WebSocketUrlLocal = "ws://192.168.1.101:8082/tow/update";
 
 	private TowView tv;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
+		removeBars();
 		TowView tv = new TowView(getApplicationContext());
-		
+
 		setContentView(tv);
+	}
+
+	private void removeBars() {
+		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 	}
 
 	private void connect(String url) {
