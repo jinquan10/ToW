@@ -1,8 +1,8 @@
-var remoidApp = angular.module('remoidApp', [
-        'ngRoute', 'remoidControllers', 'remoidServices', 'ngCookies'
+var towApp = angular.module('towApp', [
+        'ngRoute', 'towControllers', 'towServices', 'ngCookies'
 ]);
 
-remoidApp.config([
+towApp.config([
         '$routeProvider', function($routeProvider) {
             $routeProvider.when('/main', {
                 templateUrl : 'partials/main.html',

@@ -28,7 +28,7 @@ public class TowWebSocketHandler extends TextWebSocketHandler {
 	private Logger logger = LoggerFactory.getLogger(TowWebSocketHandler.class);
 
 	@Autowired
-	private TowManager remoidManager;
+	private TowManager towManager;
 
 	private Queue<WebSocketSession> connectionQueue = new LinkedList<WebSocketSession>();
 	private Map<WebSocketSession, Game> games = new HashMap<WebSocketSession, Game>();

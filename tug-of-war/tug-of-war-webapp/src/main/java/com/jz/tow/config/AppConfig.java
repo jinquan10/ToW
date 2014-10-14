@@ -59,7 +59,7 @@ public class AppConfig extends WebMvcConfigurerAdapter implements WebSocketConfi
 
 //	@Bean
 //	public WebSocketHandler myHandler() {
-//		return new RemoidWebSocketHandler();
+//		return new towWebSocketHandler();
 //	}
 
 	@Bean

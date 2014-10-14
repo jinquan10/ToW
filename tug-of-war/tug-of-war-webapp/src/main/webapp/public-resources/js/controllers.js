@@ -1,8 +1,8 @@
-var remoidControllers = angular.module('remoidControllers', []);
+var towControllers = angular.module('towControllers', []);
 
-var host = "http://" + window.location.host + "/remoid";
+var host = "http://" + window.location.host + "/tow";
 
-remoidControllers.controller('mainController', [ '$interval', '$cookies', '$scope', '$routeParams', '$http', function($interval, $cookies, $scope, $routeParams, $http) {
+towControllers.controller('mainController', [ '$interval', '$cookies', '$scope', '$routeParams', '$http', function($interval, $cookies, $scope, $routeParams, $http) {
 	$scope.name = null;
 
 	$scope.socket = null;
@@ -216,7 +216,7 @@ remoidControllers.controller('mainController', [ '$interval', '$cookies', '$scop
 	}
 	
 	$scope.connect = function() {
-		$scope.socket = new WebSocket("ws://" + window.location.host + '/remoid/update');
+		$scope.socket = new WebSocket("ws://" + window.location.host + '/tow/update');
 		$scope.socket.onopen = function(event) {
 			$scope.socket.send(JSON.stringify({
 				'op' : 4
