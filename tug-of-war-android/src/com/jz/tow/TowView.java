@@ -119,13 +119,6 @@ public class TowView extends SurfaceView implements SurfaceHolder.Callback {
 							continue;
 						}
 
-						// c.drawLine(lineLeft, topLine, lineStopX, topLine + 1,
-						// linePaint); // top
-						// line
-						// c.drawLine(lineLeft, bottomLine, lineStopX,
-						// bottomLine + 1, linePaint); // bottom
-						// line
-
 						c.drawPath(frownPath, linePaint);
 						c.drawPath(smilePath, linePaint);
 						c.drawBitmap(rope, ropeLeft, ropeTop, null);
@@ -196,8 +189,8 @@ public class TowView extends SurfaceView implements SurfaceHolder.Callback {
 
 		private Bitmap makeRope(int fromTheMiddle, int aHeight, Options ropeOptions) {
 			ropeOptions.inJustDecodeBounds = true;
-			BitmapFactory.decodeResource(getResources(), R.drawable.ropealpha, ropeOptions);
-			Bitmap rope = BitmapFactory.decodeResource(getResources(), R.drawable.ropealpha);
+			BitmapFactory.decodeResource(getResources(), R.drawable.rope, ropeOptions);
+			Bitmap rope = BitmapFactory.decodeResource(getResources(), R.drawable.rope);
 			return Bitmap.createScaledBitmap(rope, ropeOptions.outWidth, aHeight + fromTheMiddle + 4, false);
 		}
 	}
