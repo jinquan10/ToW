@@ -1,13 +1,14 @@
 package com.jz.tow;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapFactory.Options;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Rect;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.RectF;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -20,7 +21,7 @@ public class TowView extends SurfaceView implements SurfaceHolder.Callback {
 	private TowThread th;
 	private boolean isRunning = false;
 	private Context context;
-	
+
 	public TowView(Context context) {
 		super(context);
 
@@ -68,7 +69,6 @@ public class TowView extends SurfaceView implements SurfaceHolder.Callback {
 		}
 	}
 
-	
 	class TowThread extends Thread {
 		private SurfaceHolder sh;
 
@@ -80,18 +80,36 @@ public class TowView extends SurfaceView implements SurfaceHolder.Callback {
 		public void run() {
 			long count = 0;
 			long time = System.currentTimeMillis();
-
-			Options options = new Options();
-			options.inJustDecodeBounds = true;
-			BitmapFactory.decodeResource(getResources(), R.drawable.ropealpha, options);
-			Bitmap rope = BitmapFactory.decodeResource(getResources(), R.drawable.ropealpha);
+			int fromTheMiddle = Constants.FROM_THE_MIDDLE;
 
 			DisplayMetrics displaymetrics = context.getResources().getDisplayMetrics();
 			int aHeight = displaymetrics.heightPixels;
 			int aWidth = displaymetrics.widthPixels;
-			
-			int left = (aWidth / 2) - (options.outWidth / 2);
-			
+
+			Options ropeOptions = new Options();
+			Bitmap rope = makeRope(fromTheMiddle, aHeight, ropeOptions);
+			int ropeLeft = (aWidth / 2) - (rope.getWidth() / 2);
+			int ropeTop = -(fromTheMiddle / 2);
+
+			Options knotOptions = new Options();
+			Bitmap knot = makeKnot(knotOptions);
+			int knotLeft = (aWidth / 2) - (knot.getWidth() / 2);
+			int knotTop = (aHeight / 2) - (knot.getHeight() / 2);
+
+			Paint linePaint = new Paint();
+			linePaint.setStyle(Paint.Style.STROKE);
+			linePaint.setStrokeJoin(Paint.Join.ROUND);
+			linePaint.setStrokeCap(Paint.Cap.ROUND);
+			linePaint.setStrokeWidth(5);
+			linePaint.setColor(Color.WHITE);
+
+			int radius = fromTheMiddle;
+			int topLine = aHeight / 2 - fromTheMiddle - radius;
+			int bottomLine = aHeight / 2 + fromTheMiddle + radius;
+			int lineLeft = aWidth / 2 - radius;
+			Path frownPath = createSemiCircle(radius, lineLeft, bottomLine, false);
+			Path smilePath = createSemiCircle(radius, lineLeft, topLine, true);
+
 			while (isRunning) {
 				if (sh.getSurface().isValid()) {
 					Canvas c = sh.lockCanvas();
@@ -101,9 +119,18 @@ public class TowView extends SurfaceView implements SurfaceHolder.Callback {
 							continue;
 						}
 
-						c.translate(left, 0);
-						c.drawBitmap(rope, null, new Rect(0, 0, options.outWidth, 1920), null);
-						
+						// c.drawLine(lineLeft, topLine, lineStopX, topLine + 1,
+						// linePaint); // top
+						// line
+						// c.drawLine(lineLeft, bottomLine, lineStopX,
+						// bottomLine + 1, linePaint); // bottom
+						// line
+
+						c.drawPath(frownPath, linePaint);
+						c.drawPath(smilePath, linePaint);
+						c.drawBitmap(rope, ropeLeft, ropeTop, null);
+						c.drawBitmap(knot, knotLeft, knotTop, null);
+
 						count++;
 						if (count % 100 == 0) {
 							Log.d("jzjz", "fps = " + count / ((System.currentTimeMillis() - time) / 1000));
@@ -116,6 +143,62 @@ public class TowView extends SurfaceView implements SurfaceHolder.Callback {
 					}
 				}
 			}
+		}
+
+		private Path createSemiCircle(int radius, float x, float y, boolean isSmile) {
+			// y = sqrt(radius ^ 2 - x^2);
+
+			float offset = (radius / 2);
+			float a = -radius + offset;
+			float x1 = x + offset;
+			float radiusSqrd = radius * radius;
+
+			float y1;
+
+			if (isSmile) {
+				y1 = y + (float) Math.sqrt(radiusSqrd - (a * a));
+			} else {
+				y1 = y - (float) Math.sqrt(radiusSqrd - (a * a));
+			}
+
+			Path p = new Path();
+
+			p.moveTo(x1, y1);
+
+			for (int i = (int) (-radius + offset + 1); i < radius - offset + 1; i++) {
+				float dy = (float) Math.sqrt(radiusSqrd - (i * i));
+
+				float x3 = x1 + 1;
+				float y3 = 0.f;
+
+				if (isSmile) {
+					y3 = y + dy;
+				} else {
+					y3 = y - dy;
+				}
+
+				float x2 = (x1 + x3) / 2;
+				float y2 = (y1 + y3) / 2;
+				p.quadTo(x2, y2, x3, y3);
+				x1 = x3;
+				y1 = y3;
+			}
+
+			return p;
+		}
+
+		private Bitmap makeKnot(Options knotOptions) {
+			knotOptions.inJustDecodeBounds = true;
+			BitmapFactory.decodeResource(getResources(), R.drawable.knot, knotOptions);
+			Bitmap knot = BitmapFactory.decodeResource(getResources(), R.drawable.knot);
+			return Bitmap.createScaledBitmap(knot, knotOptions.outWidth * 3, knotOptions.outHeight * 3, false);
+		}
+
+		private Bitmap makeRope(int fromTheMiddle, int aHeight, Options ropeOptions) {
+			ropeOptions.inJustDecodeBounds = true;
+			BitmapFactory.decodeResource(getResources(), R.drawable.ropealpha, ropeOptions);
+			Bitmap rope = BitmapFactory.decodeResource(getResources(), R.drawable.ropealpha);
+			return Bitmap.createScaledBitmap(rope, ropeOptions.outWidth, aHeight + fromTheMiddle + 4, false);
 		}
 	}
 }
