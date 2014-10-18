@@ -1,5 +1,7 @@
 package com.jz.tow;
 
+import java.util.Random;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,7 +10,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.RectF;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -17,33 +18,44 @@ import android.view.SurfaceView;
 
 public class TowView extends SurfaceView implements SurfaceHolder.Callback {
 
-	private int color;
 	private TowThread th;
 	private boolean isRunning = false;
 	private Context context;
-
+	private boolean isMoving;
+	private Random random = new Random();
+	
+	private int mX, mY;
+	
 	public TowView(Context context) {
 		super(context);
 
 		getHolder().addCallback(this);
-		color = Color.WHITE;
 		this.context = context;
+		this.isMoving = false;
+		this.mX = -1;
+		this.mY = -1;
 	}
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		super.onTouchEvent(event);
 
-		if (event.getAction() != MotionEvent.ACTION_UP) {
-			return true;
-		}
-
-		if (color == Color.WHITE) {
-			color = Color.BLACK;
+		int action = event.getAction();
+		int x = (int) event.getX();
+		int y = (int) event.getY();
+		
+		if (x != mX || y != mY) {
+			this.isMoving = true;
+			mX = x;
+			mY = y;
 		} else {
-			color = Color.WHITE;
+			this.isMoving = false;
 		}
-
+		
+		if (action == MotionEvent.ACTION_UP) {
+			this.isMoving = false;
+		}
+		
 		return true;
 	}
 
@@ -96,12 +108,7 @@ public class TowView extends SurfaceView implements SurfaceHolder.Callback {
 			int knotLeft = (aWidth / 2) - (knot.getWidth() / 2);
 			int knotTop = (aHeight / 2) - (knot.getHeight() / 2);
 
-			Paint linePaint = new Paint();
-			linePaint.setStyle(Paint.Style.STROKE);
-			linePaint.setStrokeJoin(Paint.Join.ROUND);
-			linePaint.setStrokeCap(Paint.Cap.ROUND);
-			linePaint.setStrokeWidth(5);
-			linePaint.setColor(Color.WHITE);
+			Paint linePaint = createSemiCirclePaint();
 
 			int radius = fromTheMiddle;
 			int topLine = aHeight / 2 - fromTheMiddle - radius;
@@ -112,17 +119,18 @@ public class TowView extends SurfaceView implements SurfaceHolder.Callback {
 
 			while (isRunning) {
 				if (sh.getSurface().isValid()) {
-					Canvas c = sh.lockCanvas();
+					Canvas canvas = sh.lockCanvas();
 
 					try {
-						if (c == null) {
+						if (canvas == null) {
 							continue;
 						}
 
-						c.drawPath(frownPath, linePaint);
-						c.drawPath(smilePath, linePaint);
-						c.drawBitmap(rope, ropeLeft, ropeTop, null);
-						c.drawBitmap(knot, knotLeft, knotTop, null);
+						canvas.drawColor(Color.BLACK);
+						canvas.drawPath(frownPath, linePaint);
+						canvas.drawPath(smilePath, linePaint);
+						
+						drawRope(rope, knot, ropeLeft, ropeTop, knotLeft, knotTop, canvas);
 
 						count++;
 						if (count % 100 == 0) {
@@ -130,17 +138,37 @@ public class TowView extends SurfaceView implements SurfaceHolder.Callback {
 						}
 					} finally {
 
-						if (c != null) {
-							sh.unlockCanvasAndPost(c);
+						if (canvas != null) {
+							sh.unlockCanvasAndPost(canvas);
 						}
 					}
 				}
 			}
 		}
 
-		private Path createSemiCircle(int radius, float x, float y, boolean isSmile) {
-			// y = sqrt(radius ^ 2 - x^2);
+		private void drawRope(Bitmap rope, Bitmap knot, int ropeLeft, int ropeTop, int knotLeft, int knotTop, Canvas canvas) {
+			if (isMoving) {
+				boolean leftOrRight = random.nextBoolean();
+				int randomLength = (leftOrRight == true) ? (int) (random.nextFloat() * Constants.ROPE_VIBRATION_X) : (int) (-1 * random.nextFloat() * Constants.ROPE_VIBRATION_X);
+				ropeLeft += randomLength;
+				knotLeft += randomLength;
+			}
+			
+			canvas.drawBitmap(rope, ropeLeft, ropeTop, null);
+			canvas.drawBitmap(knot, knotLeft, knotTop, null);
+		}
+		
+		private Paint createSemiCirclePaint() {
+			Paint linePaint = new Paint();
+			linePaint.setStyle(Paint.Style.STROKE);
+			linePaint.setStrokeJoin(Paint.Join.ROUND);
+			linePaint.setStrokeCap(Paint.Cap.ROUND);
+			linePaint.setStrokeWidth(5);
+			linePaint.setColor(Color.WHITE);
+			return linePaint;
+		}
 
+		private Path createSemiCircle(int radius, float x, float y, boolean isSmile) {
 			float offset = (radius / 2);
 			float a = -radius + offset;
 			float x1 = x + offset;

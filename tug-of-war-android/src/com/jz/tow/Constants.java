@@ -1,5 +1,6 @@
 package com.jz.tow;
 
 public class Constants {
-	public static int FROM_THE_MIDDLE = 450;
+	public static final float ROPE_VIBRATION_X = 20;
+	public static final int FROM_THE_MIDDLE = 450;
 }
