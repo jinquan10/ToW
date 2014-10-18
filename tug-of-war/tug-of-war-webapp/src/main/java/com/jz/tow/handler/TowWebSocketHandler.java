@@ -48,6 +48,8 @@ public class TowWebSocketHandler extends TextWebSocketHandler {
 			
 			if (wsMessage.getOp() == OpCodes.START_GAME) {
 				this.towManager.startGame(session);
+			} else if (wsMessage.getOp() == OpCodes.TUGGING) {
+				this.towManager.tug(session, wsMessage);
 			}
 		} catch (JsonProcessingException e) {
 			this.logger.error("startGame", e);

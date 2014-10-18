@@ -47,19 +47,20 @@ public class TowManager {
 			}
 		}
 
-		Game game = new Game();
-		game.setPlayerA(playerASocket);
-		game.setPlayerB(playerBSocket);
-
+		Game game = new Game(playerASocket, playerBSocket);
 		runningGames.put(playerASocket, game);
 		runningGames.put(playerBSocket, game);
 
 		WSMessage m = WSMessage.newMessage(OpCodes.START_GAME);
-		m.setStartTime(System.currentTimeMillis() + Constants.START_TIME_DELAY);
+		m.setStartTime(game.getStartTime());
 
 		TextMessage tm = new TextMessage(objectMapper.writeValueAsString(m));
 		playerASocket.sendMessage(tm);
 		playerBSocket.sendMessage(tm);
+	}
+	
+	public void tug(WebSocketSession session, WSMessage wsMessage) {
+		this.runningGames.get(session).tug(session.getId(), wsMessage.getTug());
 	}
 	
 	public void handleNewConnection(WebSocketSession session) {
