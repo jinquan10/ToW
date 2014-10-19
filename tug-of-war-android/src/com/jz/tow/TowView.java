@@ -101,7 +101,7 @@ public class TowView extends SurfaceView implements SurfaceHolder.Callback {
 			Options ropeOptions = new Options();
 			Bitmap rope = makeRope(fromTheMiddle, aHeight, ropeOptions);
 			int ropeLeft = (aWidth / 2) - (rope.getWidth() / 2);
-			int ropeTop = -(fromTheMiddle / 2);
+			int ropeTop = -fromTheMiddle;
 
 			Options knotOptions = new Options();
 			Bitmap knot = makeKnot(knotOptions);
@@ -219,7 +219,7 @@ public class TowView extends SurfaceView implements SurfaceHolder.Callback {
 			ropeOptions.inJustDecodeBounds = true;
 			BitmapFactory.decodeResource(getResources(), R.drawable.rope, ropeOptions);
 			Bitmap rope = BitmapFactory.decodeResource(getResources(), R.drawable.rope);
-			return Bitmap.createScaledBitmap(rope, ropeOptions.outWidth, aHeight + fromTheMiddle + 4, false);
+			return Bitmap.createScaledBitmap(rope, ropeOptions.outWidth, aHeight + (fromTheMiddle * 2) + 4, false);
 		}
 	}
 }
