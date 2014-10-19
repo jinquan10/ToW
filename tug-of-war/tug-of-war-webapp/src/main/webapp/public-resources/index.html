@@ -1,31 +1,22 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="towApp">
 <head>
-<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css" />
-<link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css" />
+<link rel="stylesheet"
+	href="bower_components/bootstrap/dist/css/bootstrap.min.css" />
+<link rel="stylesheet"
+	href="bower_components/font-awesome/css/font-awesome.min.css" />
 <link rel="stylesheet" href="css/tow.css" />
 <link rel="stylesheet" href="css/tow-less.css" />
 
 <script src="bower_components/jquery/dist/jquery.min.js"></script>
-
-<script src="bower_components/sockjs/sockjs.min.js"></script>
-<script src="bower_components/stomp-websocket/dist/stomp.min.js"></script>
-
-<script src="bower_components/angular/angular.min.js"></script>
-<script src="bower_components/angular-resource/angular-resource.min.js"></script>
-<script src="bower_components/angular-route/angular-route.min.js"></script>
-<script src="bower_components/angular-cookies/angular-cookies.min.js"></script>
 <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 <script src="js/jzlib.js"></script>
-<script src="js/services.js"></script>
-<script src="js/app.js"></script>
-<script src="js/controllers.js"></script>
+<script src="js/towCanvas.js"></script>
 <script src="3rd_party_js/countdown.js"></script>
 <script src="3rd_party_js/jquery.dotdotdot.min.js"></script>
+
 </head>
 <body>
-
-	<div ng-view></div>
-
+	<canvas id="canvas" width="1600px" height="800px" class="canvas-wrapper"></canvas>
 </body>
 </html>

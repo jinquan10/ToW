@@ -565,3 +565,8 @@ pre {
 .phone-control-segment {
 	padding: 0;
 }
+
+.canvas-wrapper {
+	margin: 0 auto;
+	display: table;
+}

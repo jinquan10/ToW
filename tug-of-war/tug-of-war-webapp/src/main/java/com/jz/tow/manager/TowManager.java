@@ -59,7 +59,7 @@ public class TowManager {
 		playerBSocket.sendMessage(tm);
 	}
 	
-	public void tug(WebSocketSession session, WSMessage wsMessage) {
+	public void tug(WebSocketSession session, WSMessage wsMessage) throws JsonProcessingException, IOException {
 		this.runningGames.get(session).tug(session.getId(), wsMessage.getTug());
 	}
 	

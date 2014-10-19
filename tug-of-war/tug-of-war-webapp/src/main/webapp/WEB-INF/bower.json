@@ -16,7 +16,8 @@
     "bootstrap": "~3.x",
     "font-awesome": "4.1.0",
     "sockjs": "~0.3",
-    "stomp-websocket": "~2.0"
+    "stomp-websocket": "~2.0",
+    "crafty": "0.6.2"
   },
   "license": "MIT",
   "private": true,
