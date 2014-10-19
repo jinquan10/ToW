@@ -55,3 +55,12 @@ function bindCharsRequired(characterLimit, messageElement, sourceText) {
         }
     });
 }
+
+function nextBoolean(){
+	if (Math.floor(Math.random() * 2) == 0) {
+		return false;
+	} else {
+		return true;
+	}
+
+}
