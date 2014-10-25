@@ -3,7 +3,7 @@ package com.jz.tow;
 public class WSMessage {
 	private int op;
 	private long startTime;
-	private int tug;
+	private float tug;
 	private boolean hasWon;
 
 	public static WSMessage newMessage(int op) {
@@ -11,14 +11,6 @@ public class WSMessage {
 		m.setOp(op);
 		
 		return m;
-	}
-	
-	public int getTug() {
-		return tug;
-	}
-	
-	public void setTug(int tug) {
-		this.tug = tug;
 	}
 	
 	public int getOp() {
@@ -43,5 +35,13 @@ public class WSMessage {
 
 	public void setHasWon(boolean hasWon) {
 		this.hasWon = hasWon;
+	}
+
+	public float getTug() {
+		return tug;
+	}
+
+	public void setTug(float tug) {
+		this.tug = tug;
 	}
 }

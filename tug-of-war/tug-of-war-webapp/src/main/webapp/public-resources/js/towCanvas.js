@@ -6,9 +6,10 @@ var wsConnected = false;
 var gameStarted = false;
 
 // tug vars
-var tick = 500; // ms
+var tick = 0; // ms
 var currTick = -1;
 var tugged = 0; // - how much i tugged last refresh
+var prevGameTugged = null;
 var gameTugged = 0; // - total tugged between 2 players
 
 var ropeImg;
@@ -23,14 +24,16 @@ var canvasHeight = 800;
 var semiCircleWidth = 5;
 var semiCircleStrokeStyle = 'white';
 
-var animations = [];
+var staticAnimations = [];
 
-var backgroundOrder = 0;
-var semiCircleOrder = 1;
-var ropeOrder = 2;
+var backgroundOrder = 1;
+var semiCircleOrder = 2;
+var ropeOrder = 3;
 
 var mousedown = false;
 var mousemoving = false;
+
+var ropeChanged = false;
 
 window.requestAnimFrame = (function(callback) {
 	return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame
@@ -49,14 +52,14 @@ $(function() {
 	canvas.height = canvasHeight;
 
 	var prevY = -1;
-
+	var currY = -1;
+	
 	jCanvas.mousedown(function(){
 		mousedown = true;
 		prevY = -1;
 		
 		console.log("mousedown");
 	});
-
 	
 	jCanvas.mousemove(function(event){
 		if(!gameStarted) {
@@ -68,20 +71,22 @@ $(function() {
 			
 			if(prevY == -1){
 				prevY = event.clientY; 
-			} else {
-				var t = (event.clientY - prevY);
-				
-				console.log("t: " + t);
-				
-				if (t > 0) {
-					tugged += t;
-					prevY = event.clientY;					
-				}
 			}
+			
+			currY = event.clientY;
 		}
 	});
 	
 	jCanvas.mouseup(function(){
+		var t = (currY - prevY);
+		
+		console.log("t: " + t);
+		
+		if (t > 0) {
+			tugged += t;
+			prevY = event.clientY;					
+		}
+		
 		mousedown = false;
 		mousemoving = false;
 	});
@@ -108,7 +113,14 @@ function connectToWS() {
 		if (data.op == 0) {
 			gameStarted = true;
 		} else if (data.op == 1) {
+			if (prevGameTugged == null) {
+				prevGameTugged = 0;
+			} else {
+				prevGameTugged = gameTugged; 
+			}
+			
 			gameTugged = data.tug;
+			ropeChanged = true;
 		}
 	}
 	
@@ -116,32 +128,45 @@ function connectToWS() {
 }
 
 function drawImgs() {
- drawBackground();
- drawSemiCircles();
- drawRope();
+	drawStatic();
 	
 	animate();
 }
 
-function drawBackground() {
-	context.fillStyle = "#000000"; // sets color
-	context.fillRect(0, 0, canvasWidth, canvasHeight);
-	
-	addToAnimStack(backgroundOrder, function() {
-		context.fillRect(0, 0, canvasWidth, canvasHeight);
-	});
+function drawStatic() {
+	staticAnimations = [];
+	drawBackground(true);
+	drawSemiCircles(true);
+	drawRope(true);
 }
 
-function drawSemiCircles() {
-	var radius = fromTheMiddle;
-	var topLine = canvasHeight / 2 - fromTheMiddle - radius;
-	var bottomLine = canvasHeight / 2 + fromTheMiddle + radius;
-	var lineLeft = canvasWidth / 2 - radius;
+function drawBackground() {
+	context.fillStyle = "#000000"; // sets color
 	
-	addToAnimStack(semiCircleOrder, function(){
+	if(!ropeChanged) {
+		addToAnimStack(backgroundOrder, function() {
+			context.fillRect(0, 0, canvasWidth, canvasHeight);
+		});
+	} else {
+		context.fillRect(0, 0, canvasWidth, canvasHeight);
+	}
+}
+
+var radius = fromTheMiddle;
+var topLine = canvasHeight / 2 - fromTheMiddle - radius;
+var bottomLine = canvasHeight / 2 + fromTheMiddle + radius;
+var lineLeft = canvasWidth / 2 - radius;
+
+function drawSemiCircles() {
+	if (!ropeChanged) {
+		addToAnimStack(semiCircleOrder, function(){
+			drawSemiCircle(radius, lineLeft, topLine, true);
+			drawSemiCircle(radius, lineLeft, bottomLine, false);
+		});
+	} else {
 		drawSemiCircle(radius, lineLeft, topLine, true);
- drawSemiCircle(radius, lineLeft, bottomLine, false);
-	});
+		drawSemiCircle(radius, lineLeft, bottomLine, false);
+	}
 }
 
 function drawSemiCircle(radius, x, y, isSmile) {
@@ -190,21 +215,50 @@ function addToAnimStack(order, func){
 	obj.order = order;
 	obj.func = func;
 
-	animations.push(obj);
-	sortAnimations(animations);
+	staticAnimations.push(obj);
+	sortStaticAnimations(staticAnimations);
 }
 
 function animate() {
-	for ( var i = 0; i < animations.length; i++) {
-		(animations[i].func)();
-	}
-	;
-
+	if (ropeChanged) {
+		animateRopeChange(0);
+		
+		return;
+	} 
+	
+	updateTug();
+	animateStatic();
 	updateTug();
 	
 	requestAnimFrame(function() {
 		animate();
 	});
+}
+
+function animateRopeChange(i) {
+	drawBackground();
+	drawSemiCircles();
+	
+	if (gameTugged > prevGameTugged) {
+		drawRope(prevGameTugged + i);			
+	} else {
+		drawRope(prevGameTugged - i);
+	}
+	
+	requestAnimFrame(function() {
+		if (i <= Math.abs(gameTugged - prevGameTugged)) {
+			animateRopeChange(i + 1);
+		} else {
+			ropeChanged = false;			
+			animate();
+		}
+	});
+}
+
+function animateStatic() {
+	for ( var i = 0; i < staticAnimations.length; i++) {
+		(staticAnimations[i].func)();
+	}
 }
 
 function updateTug(){
@@ -219,7 +273,7 @@ function updateTug(){
 		if (wsConnected) {
 			ws.send(JSON.stringify({
 				op : 1,
-				tug : tugged
+				tug : tugged / canvasHeight
 			}));
 			
 			currTick = milli;
@@ -237,15 +291,26 @@ function getVibration() {
 	}
 }
 
-function drawRope() {
+var ropeLeft;
+var ropeTop;
+var knotLeft;
+var knotTop;
+
+function drawRope(tuggg) {
+	if (ropeChanged) {
+		var vib = getVibration()
+		var ropeLeftV = vib + ropeLeft;
+		var knotLeftV = vib + knotLeft;
+		
+		context.drawImage(ropeImg, ropeLeftV, ropeTop + tuggg, ropeImg.width / ropeScale, ropeImg.height + (fromTheMiddle * 2) + 4);
+		context.drawImage(knotImg, knotLeftV, knotTop + tuggg, knotImg.width * knotScale, knotImg.height * knotScale);
+		
+		return;
+	}
+	
 	this.ropeImg = new Image();
 	this.knotImg = new Image();
 
-	var ropeLeft;
-	var ropeTop;
-	var knotLeft;
-	var knotTop;
-	
 	// - load the rope and knot sequentially to avoid complicated sync logic
 	
 	ropeImg.onload = function() {
@@ -262,6 +327,7 @@ function drawRope() {
 			var vib = getVibration()
 			var ropeLeftV = vib + ropeLeft;
 			var knotLeftV = vib + knotLeft;
+			
 			context.drawImage(ropeImg, ropeLeftV, ropeTop + gameTugged, ropeImg.width / ropeScale, ropeImg.height + (fromTheMiddle * 2) + 4);
 			context.drawImage(knotImg, knotLeftV, knotTop + gameTugged, knotImg.width * knotScale, knotImg.height * knotScale);
 		});
@@ -270,7 +336,7 @@ function drawRope() {
 	ropeImg.src = '/tow/img/rope.png';
 }
 
-function sortAnimations(arr) {
+function sortStaticAnimations(arr) {
 	arr.sort(function(a, b) {
 		if (a.order > b.order) {
 			return 1;

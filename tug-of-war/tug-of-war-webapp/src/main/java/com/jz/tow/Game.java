@@ -21,7 +21,7 @@ public class Game {
 	private int tugs; // - positive == playerB
 
 	private ObjectMapper objectMapper;
-	
+
 	public Game(WebSocketSession playerASocket, WebSocketSession playerBSocket, ObjectMapper objectMapper) {
 		this.objectMapper = objectMapper;
 		this.playerA = playerASocket;
@@ -31,23 +31,26 @@ public class Game {
 		this.tickedTime = this.startTime;
 	}
 
-	public void tug(String id, int tug) throws JsonProcessingException, IOException {
+	public void tug(String id, float tug) throws JsonProcessingException, IOException {
 		long epoch = System.currentTimeMillis();
 
 		if (epoch < startTime) {
 			return;
 		}
 		
+		// - tug is a percentage of dragged screen
+		int tugged = (int) (tug * Constants.TUG_PERCENTAGE); 
+		
 		if (this.playerA.getId().equals(id)) {
-			this.tugs -= tug;
+			this.tugs -= tugged;
 		} else {
-			this.tugs += tug;
+			this.tugs += tugged;
 		}
 		
 		logger.debug("tug: " + tug);
 		logger.debug("tugs: " + tugs);
 		
-		if (epoch > this.tickedTime) {
+		if (epoch > this.tickedTime + Constants.TICK_TIME) {
 			updatePlayers();
 			this.tickedTime = epoch; 
 		} else {
