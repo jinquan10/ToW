@@ -1,5 +1,15 @@
 var canvas;
 var context;
+var ws;
+var wsUrl = "ws://192.168.1.101:8082/tow/update";
+var wsConnected = false;
+var gameStarted = false;
+
+// tug vars
+var tick = 500; // ms
+var currTick = -1;
+var tugged = 0; // - how much i tugged last refresh
+var gameTugged = 0; // - total tugged between 2 players
 
 var ropeImg;
 var knotImg;
@@ -30,6 +40,8 @@ window.requestAnimFrame = (function(callback) {
 })();
 
 $(function() {
+	ws = connectToWS();
+	
 	var jCanvas = $("#canvas");
 	canvas = $("#canvas")[0];
 	context = canvas.getContext('2d');
@@ -39,10 +51,26 @@ $(function() {
 	jCanvas.mousedown(function(){
 		mousedown = true;
 	});
+
+	var prevY = -1;
 	
 	jCanvas.mousemove(function(event){
+		if(!gameStarted) {
+			return;
+		}
+		
 		if (mousedown) {
 			mousemoving = true;
+			
+			if(prevY == -1){
+				prevY = event.clientY; 
+			} else {
+				var t = (event.clientY - prevY);
+				if (t > 0) {
+					tugged += t;
+					prevY = event.clientY;					
+				}
+			}
 		}
 	});
 	
@@ -53,6 +81,32 @@ $(function() {
 	
 	drawImgs();
 });
+
+function connectToWS() {
+	var ws = new WebSocket(wsUrl);
+	
+	ws.onopen = function(event) {
+		wsConnected = true;
+		console.log("connected to ws server");
+		
+		// - tell server to start the game
+		ws.send(JSON.stringify({
+			op : 0
+		}));
+	};
+	
+	ws.onmessage = function(event) {
+		var data = JSON.parse(event.data);
+		
+		if (data.op == 0) {
+			gameStarted = true;
+		} else if (data.op == 1) {
+			gameTugged = data.tug;
+		}
+	}
+	
+	return ws;
+}
 
 function drawImgs() {
  drawBackground();
@@ -139,9 +193,32 @@ function animate() {
 	}
 	;
 
+	updateTug();
+	
 	requestAnimFrame(function() {
 		animate();
 	});
+}
+
+function updateTug(){
+	if (tugged == 0) {
+		return;
+	}
+	
+	console.log("tugged: " + tugged);
+	
+	var milli = (new Date).getTime();
+	if (milli - currTick > tick) {
+		if (wsConnected) {
+			ws.send(JSON.stringify({
+				op : 1,
+				tug : tugged
+			}));
+			
+			currTick = milli;
+			tugged = 0;
+		}
+	}
 }
 
 function getVibration() {
@@ -178,8 +255,8 @@ function drawRope() {
 			var vib = getVibration()
 			var ropeLeftV = vib + ropeLeft;
 			var knotLeftV = vib + knotLeft;
-			context.drawImage(ropeImg, ropeLeftV, ropeTop, ropeImg.width / ropeScale, ropeImg.height + (fromTheMiddle * 2) + 4);
-			context.drawImage(knotImg, knotLeftV, knotTop, knotImg.width * knotScale, knotImg.height * knotScale);
+			context.drawImage(ropeImg, ropeLeftV, ropeTop + gameTugged, ropeImg.width / ropeScale, ropeImg.height + (fromTheMiddle * 2) + 4);
+			context.drawImage(knotImg, knotLeftV, knotTop + gameTugged, knotImg.width * knotScale, knotImg.height * knotScale);
 		});
 	};
 	

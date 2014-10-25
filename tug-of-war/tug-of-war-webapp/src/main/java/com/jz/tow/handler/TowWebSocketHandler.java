@@ -44,11 +44,11 @@ public class TowWebSocketHandler extends TextWebSocketHandler {
 	@Override
 	public void handleTextMessage(WebSocketSession session, TextMessage message) {
 		try {
-			WSMessage wsMessage = this.objectMapper.readValue(message.toString(), WSMessage.class);
+			WSMessage wsMessage = this.objectMapper.readValue(message.getPayload(), WSMessage.class);
 			
 			if (wsMessage.getOp() == OpCodes.START_GAME) {
 				this.towManager.startGame(session);
-			} else if (wsMessage.getOp() == OpCodes.TUGGING) {
+			} else if (wsMessage.getOp() == OpCodes.UPDATE_ROPE) {
 				this.towManager.tug(session, wsMessage);
 			}
 		} catch (JsonProcessingException e) {

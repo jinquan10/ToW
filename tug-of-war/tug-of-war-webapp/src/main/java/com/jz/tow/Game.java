@@ -18,11 +18,10 @@ public class Game {
 
 	private int tugs; // - positive == playerB
 
-	@Autowired
-	@Qualifier("objectMapper")
 	private ObjectMapper objectMapper;
 	
-	public Game(WebSocketSession playerASocket, WebSocketSession playerBSocket) {
+	public Game(WebSocketSession playerASocket, WebSocketSession playerBSocket, ObjectMapper objectMapper) {
+		this.objectMapper = objectMapper;
 		this.playerA = playerASocket;
 		this.playerB = playerBSocket;
 		this.tugs = 0;
@@ -31,14 +30,22 @@ public class Game {
 	}
 
 	public void tug(String id, int tug) throws JsonProcessingException, IOException {
+		long epoch = System.currentTimeMillis();
+
+		if (epoch < startTime) {
+			return;
+		}
+		
 		if (this.playerA.getId().equals(id)) {
 			this.tugs -= tug;
 		} else {
 			this.tugs += tug;
 		}
 		
-		if (System.currentTimeMillis() > this.tickedTime) {
+		
+		if (epoch > this.tickedTime) {
 			updatePlayers();
+			this.tickedTime = epoch; 
 		} else {
 			return;
 		}

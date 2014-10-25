@@ -47,7 +47,7 @@ public class TowManager {
 			}
 		}
 
-		Game game = new Game(playerASocket, playerBSocket);
+		Game game = new Game(playerASocket, playerBSocket, objectMapper);
 		runningGames.put(playerASocket, game);
 		runningGames.put(playerBSocket, game);
 

@@ -18,12 +18,11 @@ import com.koushikdutta.async.http.WebSocket.StringCallback;
 public class MainActivity extends Activity {
 	private static final String WebSocketUrlLocal = "ws://192.168.1.101:8082/tow/update";
 
-	private TowView tv;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		connect(WebSocketUrlLocal);
 		removeBars();
 		TowView tv = new TowView(getApplicationContext());
 

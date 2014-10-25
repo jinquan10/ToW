@@ -90,8 +90,6 @@ public class TowView extends SurfaceView implements SurfaceHolder.Callback {
 
 		@Override
 		public void run() {
-			long count = 0;
-			long time = System.currentTimeMillis();
 			int fromTheMiddle = Constants.FROM_THE_MIDDLE;
 
 			DisplayMetrics displaymetrics = context.getResources().getDisplayMetrics();
@@ -131,11 +129,6 @@ public class TowView extends SurfaceView implements SurfaceHolder.Callback {
 						canvas.drawPath(smilePath, linePaint);
 						
 						drawRope(rope, knot, ropeLeft, ropeTop, knotLeft, knotTop, canvas);
-
-						count++;
-						if (count % 100 == 0) {
-							Log.d("jzjz", "fps = " + count / ((System.currentTimeMillis() - time) / 1000));
-						}
 					} finally {
 
 						if (canvas != null) {
