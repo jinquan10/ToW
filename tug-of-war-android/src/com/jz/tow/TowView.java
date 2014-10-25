@@ -163,7 +163,7 @@ public class TowView extends SurfaceView implements SurfaceHolder.Callback {
 			linePaint.setStyle(Paint.Style.STROKE);
 			linePaint.setStrokeJoin(Paint.Join.ROUND);
 			linePaint.setStrokeCap(Paint.Cap.ROUND);
-			linePaint.setStrokeWidth(5);
+			linePaint.setStrokeWidth(Constants.SEMI_CIRCLE_WIDTH);
 			linePaint.setColor(Color.WHITE);
 			return linePaint;
 		}

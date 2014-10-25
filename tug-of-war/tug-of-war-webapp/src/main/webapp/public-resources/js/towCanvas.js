@@ -7,15 +7,17 @@ var ropeScale = 3;
 var knotScale = 1;
 var ropeVibrationX = 4;
 
-var fromTheMiddle = 450;
+var fromTheMiddle = 300;
 var canvasWidth = 800;
 var canvasHeight = 800;
+var semiCircleWidth = 5;
+var semiCircleStrokeStyle = 'white';
 
 var animations = [];
 
 var backgroundOrder = 0;
-var ropeOrder = 1;
-var knotOrder = 2;
+var semiCircleOrder = 1;
+var ropeOrder = 2;
 
 var mousedown = false;
 var mousemoving = false;
@@ -49,18 +51,77 @@ $(function() {
 		mousemoving = false;
 	});
 	
-	loadImgs();
+	drawImgs();
 });
 
-function loadImgs() {
+function drawImgs() {
+ drawBackground();
+ drawSemiCircles();
+ drawRope();
+	
+	animate();
+}
+
+function drawBackground() {
 	context.fillStyle = "#000000"; // sets color
 	context.fillRect(0, 0, canvasWidth, canvasHeight);
 	
 	addToAnimStack(backgroundOrder, function() {
 		context.fillRect(0, 0, canvasWidth, canvasHeight);
 	});
+}
+
+function drawSemiCircles() {
+	var radius = fromTheMiddle;
+	var topLine = canvasHeight / 2 - fromTheMiddle - radius;
+	var bottomLine = canvasHeight / 2 + fromTheMiddle + radius;
+	var lineLeft = canvasWidth / 2 - radius;
 	
-	loadRope();
+	addToAnimStack(semiCircleOrder, function(){
+		drawSemiCircle(radius, lineLeft, topLine, true);
+ drawSemiCircle(radius, lineLeft, bottomLine, false);
+	});
+}
+
+function drawSemiCircle(radius, x, y, isSmile) {
+	var offset = (radius / 2);
+	var a = -radius + offset;
+	var x1 = x + offset;
+	var radiusSqrd = radius * radius;
+
+	var y1;
+
+	if (isSmile) {
+		y1 = y + Math.sqrt(radiusSqrd - (a * a));
+	} else {
+		y1 = y - Math.sqrt(radiusSqrd - (a * a));
+	}
+
+	context.beginPath();
+	context.moveTo(x1, y1);
+
+	for (var i = (-radius + offset + 1); i < radius - offset + 1; i++) {
+		var dy = Math.sqrt(radiusSqrd - (i * i));
+
+		var x3 = x1 + 1;
+		var y3 = 0;
+
+		if (isSmile) {
+			y3 = y + dy;
+		} else {
+			y3 = y - dy;
+		}
+
+		var x2 = (x1 + x3) / 2;
+		var y2 = (y1 + y3) / 2;
+		context.quadraticCurveTo(x2, y2, x3, y3);
+		x1 = x3;
+		y1 = y3;
+	}
+	
+	context.lineWidth = 5;
+	context.strokeStyle = semiCircleStrokeStyle;
+	context.stroke();
 }
 
 function addToAnimStack(order, func){
@@ -70,7 +131,6 @@ function addToAnimStack(order, func){
 
 	animations.push(obj);
 	sortAnimations(animations);
-	animate();
 }
 
 function animate() {
@@ -93,7 +153,7 @@ function getVibration() {
 	}
 }
 
-function loadRope() {
+function drawRope() {
 	this.ropeImg = new Image();
 	this.knotImg = new Image();
 
@@ -101,6 +161,8 @@ function loadRope() {
 	var ropeTop;
 	var knotLeft;
 	var knotTop;
+	
+	// - load the rope and knot sequentially to avoid complicated sync logic
 	
 	ropeImg.onload = function() {
 		knotImg.src = '/tow/img/knot.png';
