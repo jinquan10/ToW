@@ -48,11 +48,15 @@ $(function() {
 	canvas.width = canvasWidth;
 	canvas.height = canvasHeight;
 
+	var prevY = -1;
+
 	jCanvas.mousedown(function(){
 		mousedown = true;
+		prevY = -1;
+		
+		console.log("mousedown");
 	});
 
-	var prevY = -1;
 	
 	jCanvas.mousemove(function(event){
 		if(!gameStarted) {
@@ -66,6 +70,9 @@ $(function() {
 				prevY = event.clientY; 
 			} else {
 				var t = (event.clientY - prevY);
+				
+				console.log("t: " + t);
+				
 				if (t > 0) {
 					tugged += t;
 					prevY = event.clientY;					

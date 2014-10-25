@@ -2,8 +2,8 @@ package com.jz.tow;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -11,6 +11,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Game {
+	private Logger logger = LoggerFactory.getLogger(Game.class);
+	
 	private WebSocketSession playerA;
 	private WebSocketSession playerB;
 	private long startTime;
@@ -42,6 +44,8 @@ public class Game {
 			this.tugs += tug;
 		}
 		
+		logger.debug("tug: " + tug);
+		logger.debug("tugs: " + tugs);
 		
 		if (epoch > this.tickedTime) {
 			updatePlayers();
